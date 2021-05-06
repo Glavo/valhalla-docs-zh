@@ -22,54 +22,30 @@
 
 ![类型，当前世界](types-0.png){ width=100% }
 
-#### Value sets
+#### 值集
 
-Every type has a _value set_; this is the set of values that can be stored in a
-variable of that type.  (For example, the value set of a primitive such as `int`
-is the set of 32 bit integers.)  We write $Vals(T)$ to describe the value set of
-type `T`.  If type `T` is a subtype of type `U`, then $Vals(T) \subseteq
-Vals(U)$.
+每个类型都有一个*值集（value set）*；这是一组可以存储在该类型变量中的值。（例如，像 `int` 这样原始类型的值集是 32 位整数的集合。）我们用 $Vals(T)$ 表示类型 `T` 的值集。如果类型 `T` 是类型 `U` 的子类型，则 $Vals(T) \subseteq
+Vals(U)$、
 
-An _object_ is an instance of a class; currently, all objects have a unique
-_object identity_.  The value set for a reference type consists not of
-_objects_, but of _references to objects_; the possible values of a variable of
-type `String` are not the `String` objects themselves, but references to those
-`String` objects. The value set for a reference type also includes the `null`
-reference. (It may come as a surprise to even experienced Java
-developers that it is not possible to store, manipulate, or access objects
-directly; we're so used to dealing with object references that we don't even
-notice the difference.  Indeed, it is a common "gotcha" question about whether
-Java objects are passed by value or by reference, and the answer is "neither":
-_object references_ are passed _by value_.)
+*对象（object）*是类的实例；当前所有对象都有唯一的 *object identity*。引用类型的值集不是由*对象*组成，而是由*对对象的引用（references to object）*组成的；`String` 类型的变量可能的值不是 `String` 对象本身，而是那些对 `String` 对象的引用。引用类型的值集还包含 `null` 引用。（即使经验丰富的 Java 开发人员也可能会惊讶于无法直接存储、操作或访问对象；我们已经习惯于处理对象引用，以至于我们都没注意到它们之间的区别。事实上，关于 Java 对象是通过值传递还是通过引用传递，这是一个常见的“陷阱”问题，答案是“都不是”：*对象引用*是*通过值*传递的。）
 
-> The value set of primitive types consists of primitive values; the value set
-of reference types consists of references to object instances, or null.
+> 原始类型的值集由原始值组成；引用类型的值集由对对象实例的引用以及 null 组成。
 
-To highlight the values that we can store in variables in Java programs, the
-following diagram shows representable values as red boxes:
+为了突出显示我们可以存储在 Java 程序中的变量里的值，下图将可表示的值显示为红框：
 
-![Values, current world](vals-0.png){ width=100% }
+![值，当前世界](vals-0.png){ width=100% }
 
-> The universe of values currently consists of _primitive values_ and
-_references to objects_.
+> 值的世界目前由*原始值*和*对对象的引用*组成。
 
-To summarize the current world:
+对当前世界的总结：
+  - 类型分为原始类型和引用类型；
+  - 引用类型是那些不是原始类型的类型，包括声明的类和接口的类型、数组以及参数化的泛型类以及接口；
+  - 原始类型拥有对应的包装类型，包装类型是引用类型，并且可以在原始类型与其对应的包装类型之间进行装箱和拆箱转换；
+  - 原始类型的值集不包括 `null`；
+  - 引用类型的值集不包括对象，而包括对对象的*引用*，并总是包含 `null`；
+  - 对象具有 *object identity*。
 
-  - Types are divided into primitive and reference types;
-  - Reference types are those that are not primitive types, including the types
-    of declared classes and interfaces, array types, and parameterizations of
-    generic classes and interfaces;
-  - Primitives have a corresponding wrapper type, which is a reference type, and
-    there are boxing and unboxing conversion between primitive types and their
-    corresponding wrappers;
-  - The value set of primitive types never includes `null`;
-  - The value set of reference types consists not of objects, but of
-    _references_ to objects, and always includes `null`;
-  - Objects have object identity.
-
-Project Valhalla will subtly realign this division so that we can unify
-primitives with classes, but maintain the runtime behavior of today's
-primitives and support the declaration of new primitives.
+Valhalla 项目将巧妙地调整这个划分，这样我们就可以将原始类型与类统一起来，依然可以保持现状原始类型的运行时行为，并支持声明新的原始类型。
 
 ## Java's original sin
 

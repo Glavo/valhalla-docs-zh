@@ -47,57 +47,20 @@ Valhalla 允许一些类 disavow identity。这些类的实例只是它们的状
 
 每个级别都有原始类的应用。除了显而易见的 —— 将内置的基本类型转为真实的类之外 —— 许多 API 抽象，例如数字、日期、cursor 以及类似 `Optional` 的包装器等也可以自然地建模为 identity-free 类。此外，很多数据结构（例如 `HashMap`）都可以在其实现中使用原始类来提高运行效率。语言编译器也可以将它们用作数值类型、元组或多重返回等功能的编译目标。
 
-## What about generics?
+## 那么泛型呢？
 
-One of the early compromises of Java Generics is that generic type variables can
-only be instantiated with reference types, not primitive types.  This is both
-inconvenient (we have to say `List<Integer>` when we mean `List<int>`) and
-expensive (boxing has performance overhead.)  With eight primitive types,
-this restriction is something we learned to live with, but if we can write our
-own flattenable data types like our `Point` above, having an `ArrayList<Point>`
-not be backed by a flattened array of `Point` seems to defeat, well, the point.
+Java 泛型的早期妥协之一是泛型的类型变量只能用引用类型实例化，而不能使用原始类型。这既不方便（当想使用 `List<int>` 时只能用 `List<Integer>`），又很昂贵（装箱有性能开销）。对于八种原始类型，我们学会了接受这种限制，但如果我们可以编写上面的可展平数据类型，比如说上面的 `Point`，having an `ArrayList<Point>` not be backed by a flattened array of `Point` seems to defeat, well, the point.
 
-Parametric polymorphism always entails tradeoffs between code footprint,
-abstraction, and specificity, and different languages have chosen different
-tradeoffs.  At one end of the spectrum, C++ creates a specialized class for each
-instantiation of a template, and different specializations have no type-system
-relationship with each other. Such a _heterogeneous translation_ provides a high
-degree of specificity, to the point where expressions such as `a+b` can be
-interpreted relative to the behavior of `+` on the instantiated types of `a` and
-`b`, but entails a large code footprint as well as a loss of abstraction --
-there is no type that is the equivalent of `Foo<?>` in Java.
+参数化多态总是需要在代码占用空间、抽象性和特化之间进行权衡，并且不同的语言有不同的抉择。在频谱的一段，C++ 为模板的每个实例化都创建一个特化的类，并且不同的特化之间没有互相关联的类型系统上的关系。这样的*异构翻译（heterogeneous translation）*带来了高度的特化性，以至于可以相对于 `a` 和 `b` 被实例化的类型上的 `+` 操作对 `a+b` 这样的表达式进行解释，但会导致代码产生大量空间占用，并会导致抽象的损失 —— 没有能与 Java 中类似 `Foo<?>` 的类型等效的类型。
 
-At the other end of the spectrum, we have Java's current erased implementation
-which produces one class for all reference instantiations and no support for
-primitive instantiations.  Such a _homogeneous translation_ yields a high degree
-of reuse, since there is only one class and one object layout for all
-(reference) instantiations.  It carries the restriction that we can only range over types
-that have a common runtime representation, which in Java is the set of reference
-types.  This restriction has its roots deep in the design of the JVM; there
-are different bytecodes for operations on reference vs primitive values.
+频谱的另一端，Java 当前泛型的擦除实现为所有引用实例只生成一个类，并且不支持使用原始类型实例化。因为所有（引用）实例只有一个类和一个对象布局，所以这种*同构翻译（homogeneous translation）*会产生高度的重用。这有一个限制，即我们只能涉及具有通用运行时表示（common runtime representation）类型，而 Java 中这代表一组引用类型。这种限制深深扎根于 JVM 的设计中；对引用值和原始值的操作有不同的字节码。
 
-While most developers have a certain degree of distaste for erasure, this
-approach has a powerful advantage that we could not have gotten any other way:
-_gradual migration compatibility_.  This is the ability to compatibly evolve a
-class from non-generic to generic, without breaking existing sources or binary
-class files, and leaving clients and subclasses with the flexibility to migrate
-immediately, later, or never.  Offering users generics, but at the cost of
-throwing away all their libraries, would have been a bad trade in 2004, when
-Java already had a large and vibrant installed base -- and would be a worse
-trade today.  (See [In defense of erasure](erasure) for more detail on the
-forces that led to the current design of Java generics.)
+尽管大多数开发者对擦除有一定程度的厌恶，但这种方式具有一个强大的优势，这个优势无法由其他方法获得，那就是：逐步迁移的兼容性。这是一种不破坏现有的源代码或二进制类文件的情况下，把非泛型类兼容的转换为泛型类的能力，同时还让用户和子类具有选择立即迁移、稍后迁移还是不迁移的灵活性。向用户提供泛型，但代价是抛弃他们所有的库，在 2004 年 Java 已经有了一个庞大而活跃的安装基础的前提下，这是一个糟糕的交换 —— 而放在今天会更加糟糕。（有关导致 Java 当前泛型设计的因素的更多信息，请参见[为擦除辩护](erasure)。）
 
-Our goal today is even more ambitious than it was in 2004: to extend generics so
-that we can instantiate them over primitive classes with specialized
-(heterogeneous) layouts, while retaining gradual migration capability.
-Further, migration compatibility in the abstract is not enough; we want to
-actually migrate the libraries we have, including Collections and Streams.
+我们现在的目标比 2004 年更具雄心：扩展泛型，支持在特化（异构）的布局上实例化它们，同时保留逐步迁移的兼容性。此外，抽象的迁移兼容性还不够；我们还希望实际迁移我们所拥有的库，包括集合和流。
 
-This goal will be achieved through a combination of i) allowing primitive class
-instances to be treated as lightweight Objects; ii) supporting interoperation of
-primitive class types with existing erasure-based generics; and iii) developing
-optimized heterogeneous _species_ in the JVM for cases in which enough type
-information is available at run time.
+
+这一目标将通过结合以下的方法实现：i) 允许将原始类实例视为轻量级类对象；ii) 支持原始类类型与现有的基于擦除的泛型间的互操作；以及 iii) 在 JVM 中为运行时有足够类型信息的情况开发优化的异构*species*。
 
 ## A brief history
 

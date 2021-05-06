@@ -73,21 +73,11 @@ Valhalla 项目有着相当有雄心的目标，它的影响深且广，影响�
 
 然后，我们使用“最小值类型”原型从另一个方向来解决了该问题，该原型的目的是证明我们可以在 VM 中实现平坦且密集的布局。转折点出现于名为“L World”的原型中（之所以是这个名称，是因为它允许原始类与对象引用共享 `L` carrier）。在最早的探索中，我们假设了一个虚拟机模型，其中原始类更像今天的原始类型 —— 有独立的类型描述符、字节码和顶级类型 —— 部分原因是当时看来，在一组类型描述符下将引用和原始值统一到一组类型描述符、字节码和类型下似乎太艰难了。L-World 给了我们这种统一，它解决了我们在早期原型中遇到的大量挑战，并使得原始类和类真正统一。（这部分工作的口号可以描述为“`Object` is the new `Any`.”）
 
-## Moving forward
+## 向前进发
 
-We intend to divide delivery of Project Valhalla into two broad phases:
-primitive classes first, followed by specialized generics.  (These may be
-further divided into delivery milestones.)  The first phase will focus on
-support for primitive classes in the Java language and virtual machine, and
-migrating the existing primitive types to primitive classes.  This phase will
-also lay the groundwork for the use of primitive classes in the JDK, and even
-migrating some existing value-based classes (such as `Optional` or
-`LocalDateTime`), and is described by JEPs [401](jep401) and [402](jep402).
+我们打算将 Valhalla 项目的交付分为两个主要阶段：首先是原始类，其次是特化泛型。（它们可以继续划分为交付里程碑。）第一阶段重点在于 Java 语言和虚拟机支持原始类，并将现有的原始类型迁移至原始类。这一阶段还将为在 JDK 中使用原始类，甚至迁移一些现有的基于值的类（例如 `Optional` 和 `LocalDateTime` 等）奠定基础，并在 JEP [401](jep401) 和 [402](jep402) 中进行了描述。
 
-The second phase will focus on generics, extending the generic type system to
-support instantiation with primitive classes and extending the JVM to support
-specialized layouts.
-
+第二阶段将集中在发现上，扩展泛型类型系统以支持使用原始类进行实例化，并扩展 JVM 支持特化布局。
 
 [valhalla]: http://openjdk.java.net/projects/valhalla
 [values0]: http://cr.openjdk.java.net/~jrose/values/values-0.html

@@ -12,35 +12,13 @@
 
 :::
 
-## Background
+## 背景
 
-[_Project Valhalla_][valhalla] got its start in 2014, with the goal of bringing
-more flexible flattened data types to JVM-based languages, in order to restore
-alignment between the programming model and the performance characteristics of
-modern hardware.  (In some ways, it got started much earlier; the designers of
-Java wanted to include value types in the initial version of the language.)
-Initially, Valhalla was described in terms of the features we anticipated adding
-to meet this goal: _primitive classes_ (known in various iterations as _inline
-classes_ or _value types_) and _specialized generics_.  In the initial phase of
-the project, we focused primarily on understanding how the language and JVM
-would have to evolve to support these features, and what the migration
-compatibility implications for user code would be.
+[_Valhalla 项目_][valhalla]于 2014 年启动，目标是为基于 JVM 的语言带来更灵活的扁平化数据类型，以便恢复编程模型与现代硬件性能特征之间的一致性.（某些方面来说，它开始的更早；Java 的设计者希望在语言的初始版本中包含值类型。）最初，Valhalla 是根据我们为实现这一目标而预期增加的功能来描述的：*原始类（primitive class）*（在迭代过程中曾被称为内联类和值类型）和*特化泛型（specialized generic）*。在项目的初始阶段，我们主要关注于理解语言和 JVM 如何发展以支持这些特性，以及迁移兼容性对用户代码的影响。
 
-While it is possible to release these features incrementally, it is necessary to
-have a coherent vision of how they will all work together before committing to
-an implementation.  We now believe we have a coherent path to enhancing the Java
-language and virtual machine with primitive classes, migrating both the existing
-primitive types and existing value-based classes to primitive classes, having
-primitive classes interoperate cleanly with erased generics, and migrating
-existing generic classes to specialized generics.  This set of documents
-summarizes that path, to be delivered in stages.  The first two of these are
-described in [JEP 401][jep401] and [JEP 402][jep402].  (If you want to compare
-with where we started, see our [founding document][values0].)
+虽然可以逐渐发布这些特性，但是在提交实现之前，必须对它们如何协同工作有一个一致的设想。我们现在相信，我们有一条连贯的途径通过原始类来增强 Java 语言和虚拟机，将现有的原始类型以及基于值的类（value-based class）迁移至原始类，让原始类与基于擦除实现的泛型之间进行干净的互操作，并将现有的泛型类迁移至特化泛型。这组文档总结了该路径，将会分阶段交付。其中前两个在在 [JEP 401][jep401] 和 [JEP 402][jep402] 中所描述（这两个 JEP 的中文翻译请参见 [JEP 401][jep401-zh] 和 [JEP 402][jep402-zh]）。（如果您想与我们开始时的设计相比较，请参见我们的[初始文档][values0]。）
 
-However, Project Valhalla is not just about the features it will deliver, or
-about improving performance; it has the more ambitious agenda to _unify the Java
-type system_ -- unify primitive types with classes, and to allow generics to
-range over any type.
+但是，Valhalla 项目不仅仅是关于这些它将提供的特性，或者关于改进性能；它有更具雄心的 agendum 来*统一 Java 类型系统* —— 统一原始类型与类，并且允许泛型处理任何类型。
 
 #### The costs of indirection
 
@@ -241,4 +219,6 @@ specialized layouts.
 [model3]: http://cr.openjdk.java.net/~briangoetz/valhalla/eg-attachments/model3-01.html
 [jep401]: https://openjdk.java.net/jeps/401
 [jep402]: https://openjdk.java.net/jeps/402
+[jep401-zh]: https://glavo.site/translate/2021/03/06/primitive-objects/
+[jep402-zh]: https://glavo.site/translate/2021/03/06/unify-the-basic-primitives-with-objects/
 [erasure]: ../in-defense-of-erasure.md

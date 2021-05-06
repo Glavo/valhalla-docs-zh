@@ -12,34 +12,15 @@
 
 :::
 
-This document describes the directions for the Java _language_ charted by
-Project Valhalla.  (In this document, we use "currently" to describe the
-language as it stands today, without primitive objects.)
+本文档描述了 Valhalla 项目所描绘的 Java *语言*的方向。（本文档中，我们使用“当前”来描述当前没有原始对象的语言现状。）
 
-## Primitive and reference types
+## 原始类型和引用类型
 
-The Java type system circa Java 1.0 has eight primitive types (integer and
-floating point numbers of various sizes, booleans, and characters),
-user-declared classes and interfaces (including the special root class
-`Object`), and a type operator `[]` for "array of" that can operate on any type
-(including array types.)  Types that are not primitive types are called
-_reference types_.
+大约在 Java 1.0，Java 的类型系统中具有八种原始类型（各种大小的整数和浮点数、布尔值以及字符）、用户声明的类和接口（包括特殊的根类 `Object`）以及可以对任意类型（包括数组类型）进行“array of”操作的类型操作符 `[]`。不是原始类型的类型被称为*引用类型（reference type）*。
 
-Reference and primitive types differ in almost every conceivable way.  Reference
-types have _members_ (methods and fields) and supertypes (classes and
-interfaces), and all extend `Object` directly or indirectly; primitive types
-have no members, and are "islands" in the type system with no supertypes or
-subtypes.  Arrays of reference types are covariant (`String[]` is a subtype of
-`Object[]`); arrays of primitives are not.  To connect primitive types to
-reference types, each primitive type is associated with a _wrapper_ type
-(`Integer` is the wrapper type for `int`).  Wrapper types are reference types,
-and so can have members and can participate in subtyping.  There are _boxing_
-and _unboxing_ conversions between a primitive type and its corresponding
-wrapper type.  The following diagram shows the type system we currently have,
-where the solid lines represent subtyping and the dotted lines represent boxing
-and unboxing conversions.
+引用类型和原始类型几乎在每种可能的方式中都不同。引用类型具有*成员*（方法和字段）和超类型（类和接口），并且全部直接或间接继承 `Object`；原始类型没有成员，并在类型系统中是“孤岛”，没有超类型和子类型。引用类型的数组是协变的（`String[]` 是 `Object[]` 的子类型）；原始类型的数组不是。为了将原始类型连接至引用类型，每个原始类型都与一个*包装*类型相关联（`Integer` 是 `int` 的包装类型）。包装类型是引用类型，所以可以拥有成员，也可以参与子类化。原始类型与对应的包装类型之间存在*装箱（boxing）*和*拆箱（unboxing）*转换。下图显示了我们当前的类型系统，其中实线表示子类型，虚线表示装箱和拆箱转换。
 
-![Types, current world](types-0.png){ width=100% }
+![类型，当前世界](types-0.png){ width=100% }
 
 #### Value sets
 

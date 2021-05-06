@@ -62,45 +62,16 @@ Java 泛型的早期妥协之一是泛型的类型变量只能用引用类型实
 
 这一目标将通过结合以下的方法实现：i) 允许将原始类实例视为轻量级类对象；ii) 支持原始类类型与现有的基于擦除的泛型间的互操作；以及 iii) 在 JVM 中为运行时有足够类型信息的情况开发优化的异构*species*。
 
-## A brief history
+## 简史
 
-Project Valhalla has ambitious goals, and its intrusion is both deep and broad,
-affecting the `class` file format, JVM, language, libraries, and user model.  In
-2014, James Gosling described it as "six Ph.D theses, knotted together." Since
-then, we've built six distinct prototypes, each aimed at a understanding a
-separate aspect of the problem.
+Valhalla 项目有着相当有雄心的目标，它的影响深且广，影响了类文件格式、JVM、语言、库和用户模型。2014 年，James Gosling 称其为“交织在一起的六篇博士论文”。自那时依赖，我们已经构建了六个不同的原型，每个都是为了理解问题的一个不同方面。
 
-The first three prototypes explored the challenges of generics specialized
-directly to primitives, and operated by bytecode rewriting.  The first ("Model
-1") was primarily aimed at the mechanics of specialization, identifying what
-type behavior needed to be retained by the compiler and acted on by the
-specializer.  The second ("Model 2") explored how we might represent wildcards
-(and by extension, bridge methods) in a specializable generic model, and started
-to look at the challenges of migrating existing libraries.  The third ("Model
-3") consolidated what we'd learned, building a sensible classfile format that
-could be used to represent specialized generics.  (For a brief tour of some of
-the challenges and lessons learned from each of these experiments, see [this
-talk][adventures] ([slides here][adventures-slides]).
+前三个原型探索了直接针对原始类型特化泛型，并通过字节码改写进行操作的挑战。第一个（“模型 1”）主要针对特化的机制，确定哪些类型行为需要编译器保留并由特化器执行。第二个（“模型 2”）探讨了如何在可特化的泛型模型中表示通配符（and by extension, bridge methods），并开始研究迁移现有库的挑战。第三个（“模型 3”）整合了我们所学到的知识，构建了一个合理的可以用来表示特化的泛型的类文件格式。（有关从这些实验中得到的挑战和一些经验教训的简要介绍，请参见[此演讲][adventures]（[此处为幻灯片][adventures-slides]）。）
 
-The results of these experiments were a mixed bag.  On the one hand, it worked
--- it was possible to write specializable generic classes and run them on an
-only-slightly-modified JVM.  On the other hand, roadblocks abounded; existing
-classes were full of assumptions that were going to make them hard to migrate,
-and there were a number of issues for which we did not yet have a good answer.
 
-We then worked the problem from the other direction, with the "Minimal Value
-Types" prototype, whose goal was to prove that we could implement flat and dense
-layouts in the VM.  The turning point came with the prototype known as "L World"
-(so called because it lets primitive classes share the `L` carrier with object
-references).  In the earliest explorations, we assumed a VM model where
-primitive classes were more like today's primitives -- with separate type
-descriptors, bytecodes and top types -- in part because it seemed too daunting
-at the time to unify references and primitives under one set of type
-descriptors, bytecodes, and types.  L-world gave us this unification, which
-addressed a significant number of the challenges we encountered in the early
-rounds of prototypes, and leading to a true unification of primitives with
-classes.  (The mantra for this part of the work could be described as "`Object`
-is the new `Any`.")
+这些实验的结果是混杂的。一方面，它们是有效的 —— 可以编写特化的泛型类并运行在仅仅稍作修改的 JVM 上。另一方面，障碍比比皆是；现有的类充满了使得它们很难迁移的假设，并且对于很多问题，我们都还没有很好的答案。
+
+然后，我们使用“最小值类型”原型从另一个方向来解决了该问题，该原型的目的是证明我们可以在 VM 中实现平坦且密集的布局。转折点出现于名为“L World”的原型中（之所以是这个名称，是因为它允许原始类与对象引用共享 `L` carrier）。在最早的探索中，我们假设了一个虚拟机模型，其中原始类更像今天的原始类型 —— 有独立的类型描述符、字节码和顶级类型 —— 部分原因是当时看来，在一组类型描述符下将引用和原始值统一到一组类型描述符、字节码和类型下似乎太艰难了。L-World 给了我们这种统一，它解决了我们在早期原型中遇到的大量挑战，并使得原始类和类真正统一。（这部分工作的口号可以描述为“`Object` is the new `Any`.”）
 
 ## Moving forward
 

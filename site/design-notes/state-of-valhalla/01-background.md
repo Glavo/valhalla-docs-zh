@@ -20,89 +20,32 @@
 
 但是，Valhalla 项目不仅仅是关于这些它将提供的特性，或者关于改进性能；它有更具雄心的 agendum 来*统一 Java 类型系统* —— 统一原始类型与类，并且允许泛型处理任何类型。
 
-#### The costs of indirection
+#### 间接成本
 
-The JVM type system includes primitive types (`int`, `long`, etc.), classes
-(heterogeneous aggregates with identity), and arrays (homogeneous aggregates
-with identity).  This set of building blocks is flexible -- you can model any
-data structure you need to.  Data that does not fit neatly into the available
-primitive types (such as complex numbers, 3D points, tuples, decimal values,
-strings, etc.), can be easily modeled with objects.  However, objects are
-allocated in the heap (unless the VM can prove they are sufficiently narrowly
-scoped and unaliased), require an object header (generally two machine words),
-and must be referred to via a memory indirection.  For example, an array of XY
-point objects has the following memory layout:
+JVM 类型系统包括原始类型（`int`、`long` 等）、类（具有 identity 的异构聚合）和数组（具有 identity 的同构聚合）。这组构造块非常灵活 —— 您可以对任何所需的数据结构进行建模。
+不适用可用的原始类型的数据（例如复数、三维点、元组、定点数、字符串等）可以很容易地用对象进行建模。但是，对象是在堆中进行分配的（除非 VM 可以证明它们的作用域足够窄并且 unaliased），需要一个对象头（通常为两个机器 word），并且需要通过内存间接引用来引用。例如，XY 点对象的数组具有以下内存布局：
 
-![Layout of XY points](xy-points.png){ width=100% }
+![XY 点对象数组的布局](xy-points.png){ width=100% }
 
-When the Java Virtual Machine was being designed in the early 1990s, the cost of
-a memory fetch was comparable in magnitude to computational operations such as
-addition.  With the multi-level memory caches and instruction-level parallelism
-of today's CPUs, a single cache miss may cost as much as 1000 arithmetic issue
-slots -- a huge increase in relative cost.  As a result, the pointer-rich
-representation favored by the JVM, which involves many indirections between
-small islands of data, is no longer an ideal match for today's hardware.  We aim
-to give developers the control to match data layouts with the performance model
-of today's hardware, providing Java developers with an easier path to _flat_
-(cache-efficient) and _dense_ (memory-efficient) data layouts without
-compromising abstraction or type safety.  
+当 Java 虚拟机在 20 世纪 90 年代初被设计的适合，从内存取回数据的开销与加法等计算操作相当。依赖于当今 CPU 的多级高速缓存以及指令并行性，一次缓存 miss 可能会导致高达相当于上千次计算操作的开销 —— 相对成本大大增加了。因此，JVM 偏好的常用指针的表现形式（涉及数据块之间的很多间接操作）不再是当今硬件上的理想选择。我们目的是给开发人员提供控制权，使得数据布局与现在的硬件性能模型相匹配，从而为开发人员提供简单的方式来实现*平坦*（缓存友好）和*密集*（内存占用友好）的数据布局，又不损失抽象能力和类型安全性。
 
-What we would like is to have the option to get a layout more like this:
+我们想要的是可以选择这样的布局：
 
-![Flattened layout of XY points](flattened-points.png){ width=60% }
+![XY 点对象数组的平面布局](flattened-points.png){ width=60% }
 
-This layout is both flatter (no indirections) and denser (no headers) than the
-previous version.  (Related to object layout is _calling convention_, which is
-how the JVM passes values from one method to another.  In the absence of heroic
-JVM optimizations, when a method passes a `Point` to another, it passes a
-pointer, and then the callee must dereference the pointer to access the object's
-state.  Enabling a flatter representation is also likely to enable a flatter
-calling convention, where a `Point` can be passed by passing the `x` and `y`
-components by value, in registers.)
+与之前的版本相比，此布局既平坦（无间接寻址），也更密集（没有对象头）。（与对象布局相关的是*调用协定（calling convention）*，表示 JVM 中如何将值从一个方法传递给另一个方法。在缺乏强大的 JVM 优化的情况下，当一个方法把一个 `Point` 传递给另一个方法时，它会传递一个指针，然后被调用方需要解引用该指针以访问该对象的状态。允许更平坦的表示形式也可能会启用更平坦的调用协定，可以通过在寄存器内按值传递组件 `x` 和 `y` 来传递 `Point`。）
 
-One of the key questions that Project Valhalla addresses itself to is: _what
-code would we want to write to get this layout?_
+Valhalla 项目现在要解决的一个关键问题是：*我们想要编写什么样的代码来获得这种布局？*
 
-To understand our options, we must first understand where the current
-unfortunate layout comes from.  The root cause here is _object identity_: all
-object instances today must have an object identity.  (In the early 90s,
-"everything is an Object" was an attractive mantra, and the performance costs of
-identity were not onerous.)  Identity enables mutability; in order to mutate a
-field of an object, we must know _which_ object we are trying to modify.  And
-even for the many classes that eschew mutability, identity can
-be observed by various identity-sensitive operations, including object
-equality (`==`), synchronization, `System::identityHashCode`, weak references,
-etc.  The result is that the VM frequently must pessimistically preserve
-identity just in case someone might eventually perform an identity-sensitive
-operation -- even if that is never going to happen.  Thus, identity leads to the
-pointer-rich memory layout we have today.
+想要了解我们的选择，我们需要先了解目前这个不恰当的布局从何而来。根本原因在于 *object identity*：现在的所有对象实例都需要具有 object identity。（在 90 年代初，“一切皆对象”是一句很有吸引力的口头禅，而 identity 的性能开销也并不繁重。）Identity 使得可变性称为可能；为了修改对象的字段，我们必须知道我们修改的是*哪个*对象。即使对于很多避免了可变性的类，也可以通过各种对 identity 敏感的操作来观察到它，包括对象相等性（`==`）、同步、`System::identityHashCode`、弱引用等。结果是，VM 经常必须悲观地保留 identity，以防有人执行 identity 敏感的操作 —— 即使这种情况永远不会发生。因此，是 identity 导致了我们现在指针泛滥的内存布局。
 
-Valhalla enables some classes to disavow identity.  Instances of these classes
-are just their state, and therefore can be routinely flattened into enclosing
-objects or arrays, and passed by value between methods.  The trade-off is that
-we have to give up some flexibility -- they must be immutable and cannot be
-layout-polymorphic -- but in return for giving up these characteristics, we are
-be rewarded with a flatter and denser memory layout and optimized calling
-conventions.  The terminology for these classes has changed during the course of
-the project; while they were originally called _value types_ and then _inline
-classes_,  such classes are now called _primitive classes_.  This naming
-highlights the fact that they are classes with the runtime behavior of
-primitives.  The slogan for Valhalla is:
+Valhalla 允许一些类 disavow identity。这些类的实例只是它们的状态，因此可以常规地在包含它的对象或数组中展开，并按值在方法间传递。取舍是我们必须放弃一些灵活性 —— 它们必须是不可变的，不能是布局多态的 —— 但作为放弃这些特性的回报，我们可以获得更平坦、更密集的内存布局以及优化的调用协定。在项目进行过程中，这些类的术语发生了变化；它们最初被称为*值类型（value type）*，后来又被称为*内联类（inline class）*，而现在它们被称为*原始类（primitive class）*。这个命名突出了它们是运行时具有原始类型行为的类。Valhalla 的口号是：
 
 > Codes like a class, works like an int.
 
-Despite the restrictions on mutability and subclassing, primitive classes can
-use most mechanisms available to classes: methods, constructors, fields,
-encapsulation, supertypes, type variables, annotations, etc.
+尽管对可变性和子类方面进行了限制，但原始类依然可以使用适用于类的大多数机制：方法、构造器、字段、封装、超类型、泛型参数、注解等。
 
-There are applications for primitive classes at every level.  Aside from the
-obvious -- turning the built-in primitive types into real classes -- many API
-abstractions, such as numerics, dates, cursors, and wrappers like `Optional`,
-can be naturally modeled as identity-free classes.  Additionally, many data
-structures, such as `HashMap`, can profitably use primitive classes in their
-implementations to improve efficiency.  And language compilers can use them as a
-compilation target for features like built-in numeric types, tuples, or multiple
-return.
+每个级别都有原始类的应用。除了显而易见的 —— 将内置的基本类型转为真实的类之外 —— 许多 API 抽象，例如数字、日期、cursor 以及类似 `Optional` 的包装器等也可以自然地建模为 identity-free 类。此外，很多数据结构（例如 `HashMap`）都可以在其实现中使用原始类来提高运行效率。语言编译器也可以将它们用作数值类型、元组或多重返回等功能的编译目标。
 
 ## What about generics?
 

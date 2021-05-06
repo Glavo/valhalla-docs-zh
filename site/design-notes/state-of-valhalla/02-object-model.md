@@ -47,7 +47,7 @@ Vals(U)$、
 
 Valhalla 项目将巧妙地调整这个划分，这样我们就可以将原始类型与类统一起来，依然可以保持现状原始类型的运行时行为，并支持声明新的原始类型。
 
-## Java's original sin
+## Java 的原罪
 
 As an object-oriented language, the separation between primitive and reference types embodies
 a significant compromise: an OO language would like to start from the premise of

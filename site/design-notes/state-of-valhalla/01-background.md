@@ -1,14 +1,14 @@
 # State of Valhalla
 
-#### Section 1: The Road to Valhalla
+#### 第一部分：通往 Valhalla 的道路
 #### Brian Goetz, Apr 2021
 
 ::: sidebar
-Contents:
+目录：
 
-1. [The Road to Valhalla](01-background.html)
-2. [Unifying the Java Type System](02-object-model.html)
-3. [JVM Model](03-vm-model.html)
+1. [通往 Valhalla 的道路](01-background.html)
+2. [统一 Java 类型系统](02-object-model.html)
+3. [JVM 模型](03-vm-model.html)
 
 :::
 

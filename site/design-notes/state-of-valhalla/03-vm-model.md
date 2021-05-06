@@ -1,14 +1,14 @@
 # State of Valhalla
 
-#### Section 3: JVM Model
+#### 第三部分：JVM 模型
 #### John Rose and Brian Goetz, Apr 2021
 
 ::: sidebar
-Contents:
+目录：
 
-1. [The Road to Valhalla](01-background.html)
-2. [Language Model](02-object-model.html)
-3. [JVM Model](03-vm-model.html)
+1. [通往 Valhalla 的道路](01-background.html)
+2. [统一 Java 类型系统](02-object-model.html)
+3. [JVM 模型](03-vm-model.html)
 :::
 
 This document describes the _Java Virtual Machine_ view of primitive classes.  Note

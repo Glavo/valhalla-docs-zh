@@ -1,10 +1,11 @@
-valhalla-docs 中文翻译
+# valhalla-docs 中文翻译
 源仓库：https://github.com/openjdk/valhalla-docs
 
-当前基于提交： 54e26e536515e6c771f8a8a487e2d86bd0e53cb8
+当前基于提交：https://github.com/Glavo/valhalla-docs-zh/commit/54e26e536515e6c771f8a8a487e2d86bd0e53cb8
+
+
 
 Welcome to valhalla-docs!
-=========================
 
 This repository is for design notes, presentations, guides, FAQs, and
 other collateral surrounding [OpenJDK Project Valhalla](http://openjdk.java.net/projects/valhalla).

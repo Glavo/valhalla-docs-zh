@@ -1,7 +1,7 @@
 # valhalla-docs 中文翻译
-源仓库：https://github.com/openjdk/valhalla-docs
+源仓库：[openjdk/valhalla-docs](https://github.com/openjdk/valhalla-docs)
 
-当前基于提交：https://github.com/Glavo/valhalla-docs-zh/commit/54e26e536515e6c771f8a8a487e2d86bd0e53cb8
+当前基于提交：[54e26e5](https://github.com/openjdk/valhalla-docs/commit/54e26e536515e6c771f8a8a487e2d86bd0e53cb8)
 
 
 

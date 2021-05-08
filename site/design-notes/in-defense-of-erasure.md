@@ -8,8 +8,7 @@
 
 ## 擦除
 
-向任何开发者询问有关 Java 泛型的信息，您都可能会对*擦除（erasure）*感到愤怒（though
-often uninformed）。擦除可能是 Java 中最广泛、最深的被误解的概念。
+向任何开发者询问有关 Java 泛型的信息，您都可能会对*擦除（erasure）*感到愤怒（though often uninformed）。擦除可能是 Java 中最广泛、最深的被误解的概念。
 
 擦除既不是特定于 Java 的，也不是特定于泛型的；它是一种普遍存在的，而且经常是必要的工具，用于将代码从一个层次转换到更低层次（例如把 Java 源代码编译到字节码，或者把 C 源代码编译为本机代码时）。这是因为随着我们从高级语言向下到中间表示，再到本机代码，再到硬件时，较低层次提供的类型抽象几乎总是比较高层次提供的类型抽象更简单和更弱 —— 的确如此。（我们不想把虚拟分派的语义引入 X86 指令集中，也不希望在寄存器里模拟 Java 的基本类型集。）擦除是一种将一个较高层次的 richer 类型映射到较低层次的 less rich 类型（理想情况下是在较高层次上执行了完备的类型检查后）的技术，也是编译器每天都要做的事情。
 
@@ -22,17 +21,6 @@ often uninformed）。擦除可能是 Java 中最广泛、最深的被误解的�
 在具有参数化多态的语言中，翻译泛型类型又两种常见方法 —— *同构（homogeneous）*与*异构（heterogeneous）*翻译。在同构翻译中，泛型类 `Foo<T>` 会被翻译为单一 artifact，类似 `Foo.class`（泛型方法也是如此）。在异构翻译中，泛型类型以及方法（`Foo<String>`、`Foo<Integer>`）的每个实例均被视为独立的实体，并生成处理的 artifact。例如，`C++` 使用了异构翻译：模板的不同实例是完全不同的类型，具有不同的语义，会生成不同的代码。类型 `vector<int>` 和 `vector<float>` 都是独立的类型。一方面，这对类型安全性（在展开后可以分别对每个实例进行类型检查）以及生成的代码的质量（因为可以对每个实例分别进行优化）非常有效。另一方面，这意味着代码会有更大的占用（因为 `vector<int>` 与 `vector<float>` 有单独的代码），而且我们不能谈论“某个类型的 vector”（类似 Java 泛型通配符的功能），因为每个实例都是完全不相关的类型。（作为代码膨胀的空间成本的一个较为极端的展示，Scala 尝试提供了一个 `@specialized` 注解，它会让编译器为所有原始类型生成特化的版本。这听起来很酷，但这会让生成的类激增 $9^n$ 倍，其中 $n$ 是类中被特化的类型变量的数量，因此可以很轻松的从几行代码生成一个 100MB 大的 JAR 文件。）
 
 同构翻译与异构翻译之间的抉择涉及到语言的设计者一直在做的各种权衡。异构翻译提供了更多的类型特化性，代价是更大的静态和动态空间占用，以及更少的运行时共享 —— 这些都会影响性能。同构翻译更适合抽象参数化类型族，譬如 Java 的通配符和 C# 的声明处类型变异（这两者都是 `C++` 缺少的，`vector<int>` 和 `vector<float>` 之间没有任何共同之处）。有关翻译策略的更多信息，请参见[*这篇 influential paper*](http://pizzacompiler.sourceforge.net/doc/pizza-translation.pdf)。
-
-The choice between homogeneous and heterogeneous translations involves making
-the sorts of tradeoffs language designers make all the time.  Heterogeneous
-translations offer more type specificity, at the cost of greater static and
-dynamic footprint, and less sharing at runtime -- all of which have performance
-implications.  Homogeneous translations are more amenable to abstracting over
-parametric families of types, such as Java's wildcards, or C#'s declaration-site
-variance (both of which `C++` lacks, where there is nothing in common between
-`vector<int>` and `vector<float>`.)  For more information on translation
-strategies,  see [_this influential
-paper_](http://pizzacompiler.sourceforge.net/doc/pizza-translation.pdf).
 
 #### Java 中的擦除泛型
 
@@ -78,7 +66,7 @@ class Box {
   - **布局或 API 特化。**在具有原始类型或内联类的语言中，最好能将 `Pair<int, int>` 的布局展平以容纳两个 `int`，而不是存储两个对装箱对象的引用。
   - **运行时类型检查。**当用户尝试将 `Integer` 放入 `List<String>` 中时（例如通过 `List` 这样的 raw 引用），这会导致堆污染，最好能够捕获这一点并在导致堆污染的地方失败，而不是（可能）在其后某个地方合成的强制转换处检测它。
 
-这三种可能性（反射、特化与类型检查）虽然不是互斥的，但他们针对的是不同的目标（分别为对程序员的便捷性、性能和安全性）—— 并与不同的含义和成本。虽然说“我们想要具化”很容易，但如果我们进行更深入的研究，我们会发现其中重要的部分、相对成本和收益方面存在重大分歧。
+这三种可能性（反射、特化与类型检查）虽然不是互斥的，但他们针对的是不同的目标（分别为对程序员的便捷性、性能和安全性）—— 并有不同的含义和成本。虽然说“我们想要具化”很容易，但如果我们进行更深入的研究，我们会发现其中重要的部分、相对成本和收益方面存在重大分歧。
 
 为了了解为什么擦除是明智和务实的选择，我们还必须了解当时的目标、优先事项、限制与解决方案。
 

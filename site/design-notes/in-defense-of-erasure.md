@@ -78,29 +78,12 @@ Java 泛型采用了一个具有雄心的目标：
 
 以 `ArrayList` 为例，这意味着现有的用户和子类可以继续编译，而无需针对泛型化的 `ArrayList<T>` 进行修改，并且现有的类文件能够继续链接至泛型化的 `ArrayList<T>` 的方法。支持这一点意味着泛型类的用户和子类可以选择立即、稍后还是不进行泛型化，并且可以独立于其他用户或子类的维护者选择怎么做。
 
-如果没有这个要求，泛型化一个类需要一个“flag day”，其中所有用户和子类不修改也需要至少进行一次重新编译 —— 所有事情要一次性完成。对于 `ArrayList` 这样的核心类来说，这本质上是要求立即重新编译世界上所有的 Java 代码（或者永远留在 Java 1.4 上）。这样跨越整个 Java 生态的“flag day”是不可能的，所以我们需要一个泛型类型系统，它允许核心平台类（以及流行的第三方库）能够进行泛型化，而不需要用户了解它们的泛型。（更糟糕的是，这不是一个“flag day”，而是很多个，since it is not the case that all
-the world's code would have been generified in a single atomic transaction。）
+如果没有这个要求，泛型化一个类需要一个“flag day”，其中所有用户和子类不修改也需要至少进行一次重新编译 —— 所有事情要一次性完成。对于 `ArrayList` 这样的核心类来说，这本质上是要求立即重新编译世界上所有的 Java 代码（或者永远留在 Java 1.4 上）。这样跨越整个 Java 生态的“flag day”是不可能的，所以我们需要一个泛型类型系统，它允许核心平台类（以及流行的第三方库）能够进行泛型化，而不需要用户了解它们的泛型。（更糟糕的是，世界上所有的java代码不能一次性完成泛型化，所以这将不是一个“flag day”，而是很多个）。
 
-Another way to state this requirement is: it was not considered acceptable to
-orphan all the code out there that could have been generified, or make
-developers choose between generics and retaining the investment they've already
-made in existing code.  By making generification a compatible operation, the
-investment in that code could be retained, rather than invalidated.
+这种兼容性的问题用另一种话来说： 我们不能接受去孤立那些可以被泛型化的代码，或者让开发者在泛型化与他们已经投入开发的现有代码中作取舍。我们希望的是，使泛型化成为一个具有兼容性的操作，使得开发者可以保留对现有代码开发的投入的有效性的同时，选择是否泛型化。
 
-The aversion to "flag days" comes from an essential aspect of Java's design:
-Java is _separately compiled_ and _dynamically linked_.  Separate compilation
-means that every source file is compiled into one or more class files, rather
-than  compiling a group of sources into a single artifact.  Dynamic linkage
-means that references between classes are linked at run time, based on symbolic
-information; if class `C` invokes method `void m(int x)` in `D`, then in the
-classfile for `C` we record the name and descriptor (`(I)V`) of the method we
-are invoking, and at link time we look for a method in `D` with this name and
-descriptor, and if a match is found, the call site is linked.
-
-This may sound like a lot of work, but separate compilation and dynamic linkage
-power one of Java's biggest advantages -- you can compile `C` against one
-version of `D` and run with a different version of `D` on the class path (as
-long as you don't make any _binary incompatible_ changes in `D`.).  
+这种对”flag day”的厌恶来源于java设计的本质：独立编译，动态链接。独立编译意味着每个源文件将编译成一个或多个类文件，而不是多个源文件编译为一个统合件。动态链接意味着在运行时，多个类文件的引用将是基于符号信息链接在一起的；如果类 `C` 调用D中的方法`void m(int x)`，那么`C`的类文件中将会记录调用方法的方法名和描述符，并在链接时在`D`中查找刚才记录的方法名和描述符，如果两项查找都符合的话，那么调用方就被链接上了。
+这听起来很花功夫，但是独立编译，动态链接会带给java一个无与伦比的优势 —— 你可以在类路径下编译`C`和运行`C`时用不同版本的`D`文件（只要你不对`D`进行任何二进制不兼容的更改）。
 
 > The pervasive commitment to dynamic linkage is what allows us to simply drop
 a new JAR on the class path to update to a new version of a dependency, without
